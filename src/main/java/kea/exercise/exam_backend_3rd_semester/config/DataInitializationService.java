@@ -8,6 +8,7 @@ import kea.exercise.exam_backend_3rd_semester.exception.ResourceNotFoundExceptio
 import kea.exercise.exam_backend_3rd_semester.participant.Gender;
 import kea.exercise.exam_backend_3rd_semester.participant.Participant;
 import kea.exercise.exam_backend_3rd_semester.participant.ParticipantRepository;
+import kea.exercise.exam_backend_3rd_semester.result.*;
 import kea.exercise.exam_backend_3rd_semester.resultType.ResultType;
 import org.springframework.stereotype.Service;
 
@@ -18,11 +19,15 @@ import java.util.List;
 public class DataInitializationService {
     private final DisciplineRepository disciplineRepository;
     private final ParticipantRepository participantRepository;
+    private final ResultRepository resultRepository;
 
 
-    public DataInitializationService(DisciplineRepository disciplineRepository, ParticipantRepository participantRepository) {
+
+
+    public DataInitializationService(DisciplineRepository disciplineRepository, ParticipantRepository participantRepository, ResultRepository resultRepository) {
         this.disciplineRepository = disciplineRepository;
         this.participantRepository = participantRepository;
+        this.resultRepository = resultRepository;
     }
 
     @Transactional
@@ -32,6 +37,9 @@ public class DataInitializationService {
         }
         if (participantRepository.count() == 0) {
             createParticipants();
+        }
+        if (resultRepository.count() == 0) {
+            createResults();
         }
     }
 
@@ -113,6 +121,75 @@ public class DataInitializationService {
         jessicaJohnson.addDiscipline(disciplineRepository.findByName("marathon").orElseThrow(() -> new ResourceNotFoundException("Discipline not found")));
 
         participantRepository.saveAll(List.of(johnDoe, janeDoe, jackSmith, jillSmith, jamesBrown, jenniferBrown, joshuaJohnson, jessicaJohnson));
+    }
+
+    private void createResults() {
+        List<Discipline> disciplines = disciplineRepository.findAll();
+        List<Participant> participants = participantRepository.findAll();
+
+        Discipline hundredMeters = disciplines.stream().filter(d -> d.getName().equals("100m")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline twoHundredMeters = disciplines.stream().filter(d -> d.getName().equals("200m")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline hundredMetersHurdles = disciplines.stream().filter(d -> d.getName().equals("100m hurdles")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline fourHundredMetersHurdles = disciplines.stream().filter(d -> d.getName().equals("400m hurdles")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline longJump = disciplines.stream().filter(d -> d.getName().equals("long jump")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline highJump = disciplines.stream().filter(d -> d.getName().equals("high jump")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline shotPut = disciplines.stream().filter(d -> d.getName().equals("shot put")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline discusThrow = disciplines.stream().filter(d -> d.getName().equals("discus throw")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline hammerThrow = disciplines.stream().filter(d -> d.getName().equals("hammer throw")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline javelinThrow = disciplines.stream().filter(d -> d.getName().equals("javelin throw")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline heptathlon = disciplines.stream().filter(d -> d.getName().equals("heptathlon")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline threeThousandMetersSteeplechase = disciplines.stream().filter(d -> d.getName().equals("3000m steeplechase")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline decathlon = disciplines.stream().filter(d -> d.getName().equals("decathlon")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline fiveThousandMeters = disciplines.stream().filter(d -> d.getName().equals("5000m")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline halfMarathon = disciplines.stream().filter(d -> d.getName().equals("half marathon")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+        Discipline marathon = disciplines.stream().filter(d -> d.getName().equals("marathon")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Discipline not found"));
+
+        Participant johnDoe = participants.stream().filter(p -> p.getFullName().equals("John Michael Doe")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Participant not found"));
+        Participant janeDoe = participants.stream().filter(p -> p.getFullName().equals("Jane Marie Doe")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Participant not found"));
+        Participant jackSmith = participants.stream().filter(p -> p.getFullName().equals("Jack William Smith")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Participant not found"));
+        Participant jillSmith = participants.stream().filter(p -> p.getFullName().equals("Jill Elizabeth Smith")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Participant not found"));
+        Participant jamesBrown = participants.stream().filter(p -> p.getFullName().equals("James Robert Brown")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Participant not found"));
+        Participant jenniferBrown = participants.stream().filter(p -> p.getFullName().equals("Jennifer Anne Brown")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Participant not found"));
+        Participant joshuaJohnson = participants.stream().filter(p -> p.getFullName().equals("Josh James Johnson")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Participant not found"));
+        Participant jessicaJohnson = participants.stream().filter(p -> p.getFullName().equals("Jessica Mary Johnson")).findFirst().orElseThrow(() -> new ResourceNotFoundException("Participant not found"));
+
+        List<Result> results = List.of(
+            new Result(ResultType.TIME, LocalDate.of(2021, 6, 1), 10, johnDoe, hundredMeters),
+                new Result(ResultType.TIME, LocalDate.of(2021, 6, 2), 20, johnDoe, twoHundredMeters),
+                new Result(ResultType.TIME, LocalDate.of(2021, 6, 3), 30, johnDoe, fourHundredMetersHurdles),
+                new Result(ResultType.TIME, LocalDate.of(2021, 6, 4), 40, johnDoe, fourHundredMetersHurdles),
+
+                new Result(ResultType.TIME, LocalDate.of(2021, 6, 5), 50, janeDoe, hundredMeters),
+                new Result(ResultType.TIME, LocalDate.of(2021, 6, 6), 60, janeDoe, twoHundredMeters),
+                new Result(ResultType.TIME, LocalDate.of(2021, 6, 7), 70, janeDoe, hundredMetersHurdles),
+                new Result(ResultType.TIME, LocalDate.of(2021, 6, 8), 80, janeDoe, fourHundredMetersHurdles),
+
+                new Result(ResultType.DISTANCE, LocalDate.of(2021, 6, 9), 230, jackSmith, longJump),
+                new Result(ResultType.DISTANCE, LocalDate.of(2021, 6, 10), 240, jackSmith, longJump),
+                new Result(ResultType.DISTANCE, LocalDate.of(2021, 6, 11), 250, jackSmith, longJump),
+                new Result(ResultType.DISTANCE, LocalDate.of(2021, 6, 12), 260, jackSmith, longJump),
+
+                new Result(ResultType.DISTANCE, LocalDate.of(2021, 6, 13), 170, jillSmith, highJump),
+                new Result(ResultType.DISTANCE, LocalDate.of(2021, 6, 14), 180, jillSmith, highJump),
+                new Result(ResultType.DISTANCE, LocalDate.of(2021, 6, 15), 190, jillSmith, highJump),
+                new Result(ResultType.DISTANCE, LocalDate.of(2021, 6, 16), 200, jillSmith, highJump),
+
+                new Result(ResultType.DISTANCE, LocalDate.of(2021, 6, 17), 350, jamesBrown, shotPut),
+                new Result(ResultType.DISTANCE, LocalDate.of(2021, 6, 18), 450, jamesBrown, discusThrow),
+                new Result(ResultType.DISTANCE, LocalDate.of(2021, 6, 19), 375, jamesBrown, hammerThrow),
+                new Result(ResultType.DISTANCE, LocalDate.of(2021, 6, 20), 400, jamesBrown, javelinThrow),
+
+                new Result(ResultType.POINTS, LocalDate.of(2021, 6, 21), 5000, jenniferBrown, heptathlon),
+                new Result(ResultType.TIME, LocalDate.of(2021, 6, 22), 100, jenniferBrown, threeThousandMetersSteeplechase),
+
+                new Result(ResultType.POINTS, LocalDate.of(2021, 6, 23), 9000, joshuaJohnson, decathlon),
+
+                new Result(ResultType.TIME, LocalDate.of(2021, 6, 24), 200, jessicaJohnson, fiveThousandMeters),
+                new Result(ResultType.TIME, LocalDate.of(2021, 6, 25), 300, jessicaJohnson, halfMarathon),
+                new Result(ResultType.TIME, LocalDate.of(2021, 6, 26), 400, jessicaJohnson, marathon)
+        );
+
+        resultRepository.saveAll(results);
     }
 }
 
