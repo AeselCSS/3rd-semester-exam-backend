@@ -64,4 +64,13 @@ void disciplineIsAddedCorrectly() {
     assertTrue(participant.getDisciplines().contains(discipline));
     assertTrue(discipline.getParticipants().contains(participant));
 }
+
+@Test
+void disciplineIsRemovedCorrectly() {
+    Discipline discipline = new Discipline("Discipline A", DisciplineType.RUNNING, ResultType.TIME);
+    participant.addDiscipline(discipline);
+    participant.removeDiscipline(discipline);
+    assertFalse(participant.getDisciplines().contains(discipline));
+    assertFalse(discipline.getParticipants().contains(participant));
+}
 }

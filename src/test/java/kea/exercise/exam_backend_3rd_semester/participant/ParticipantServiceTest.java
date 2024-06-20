@@ -73,7 +73,7 @@ public class ParticipantServiceTest {
         assertEquals(24, responseDTO.age());
         assertEquals("Club A", responseDTO.club());
         assertEquals(1, responseDTO.disciplines().size());
-        assertEquals("Discipline A", responseDTO.disciplines().getFirst());
+        assertEquals("Discipline A", responseDTO.disciplines().get(0));
     }
 
     @Test
@@ -128,7 +128,7 @@ public class ParticipantServiceTest {
         assertEquals(24, responseDTO.age());
         assertEquals("Club B", responseDTO.club());
         assertEquals(1, responseDTO.disciplines().size());
-        assertEquals("Discipline B", responseDTO.disciplines().getFirst());
+        assertEquals("Discipline B", responseDTO.disciplines().get(0));
     }
 
     @Test
@@ -162,6 +162,65 @@ public class ParticipantServiceTest {
     }
 
     @Test
+    void addDisciplineToParticipant() {
+        Discipline newDiscipline = new Discipline("Discipline B", DisciplineType.RUNNING, ResultType.TIME);
+
+        when(participantRepository.findById(1L)).thenReturn(Optional.of(participant));
+        when(disciplineRepository.findByName("Discipline B")).thenReturn(Optional.of(newDiscipline));
+        when(participantRepository.save(any(Participant.class))).thenReturn(participant);
+
+        ParticipantResponseDTO responseDTO = participantService.addDiscipline(1L, "Discipline B");
+
+        assertEquals(2, responseDTO.disciplines().size());
+        assertTrue(responseDTO.disciplines().contains("Discipline A"));
+        assertTrue(responseDTO.disciplines().contains("Discipline B"));
+    }
+
+    @Test
+    void addDisciplineThrowsExceptionWhenDisciplineNotFound() {
+        when(participantRepository.findById(1L)).thenReturn(Optional.of(participant));
+        when(disciplineRepository.findByName("Non-existent Discipline")).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            participantService.addDiscipline(1L, "Non-existent Discipline");
+        });
+
+        assertEquals("Discipline not found with name: Non-existent Discipline", exception.getMessage());
+    }
+
+    @Test
+    void removeDisciplineFromParticipant() {
+        Discipline existingDiscipline = new Discipline("Discipline A", DisciplineType.RUNNING, ResultType.TIME);
+        participant.addDiscipline(existingDiscipline);  // Ensure the participant has the discipline to begin with
+
+        when(participantRepository.findById(1L)).thenReturn(Optional.of(participant));
+        when(disciplineRepository.findByName("Discipline A")).thenReturn(Optional.of(existingDiscipline));
+
+        ParticipantResponseDTO responseDTO = participantService.removeDiscipline(1L, "Discipline A");
+
+        // Verify the discipline is removed
+        assertEquals(0, participant.getDisciplines().size());
+        assertEquals(0, responseDTO.disciplines().size());
+
+        // Verify that the participant was saved with the updated disciplines
+        verify(participantRepository).save(participant);
+    }
+
+
+
+    @Test
+    void removeDisciplineThrowsExceptionWhenDisciplineNotFound() {
+        when(participantRepository.findById(1L)).thenReturn(Optional.of(participant));
+        when(disciplineRepository.findByName("Non-existent Discipline")).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            participantService.removeDiscipline(1L, "Non-existent Discipline");
+        });
+
+        assertEquals("Discipline not found with name: Non-existent Discipline", exception.getMessage());
+    }
+
+    @Test
     void getParticipantsWithFiltersAndSorting() {
         Participant participant2 = new Participant("Jane Doe", Gender.FEMALE, LocalDate.of(1995, 1, 1), "Club B");
         participant2.addDiscipline(discipline);
@@ -171,20 +230,20 @@ public class ParticipantServiceTest {
         List<ParticipantResponseDTO> responseDTOs = participantService.getParticipants(Gender.FEMALE, null, null, null, "fullName", "asc");
 
         assertEquals(1, responseDTOs.size());
-        assertEquals("Jane Doe", responseDTOs.getFirst().fullName());
+        assertEquals("Jane Doe", responseDTOs.get(0).fullName());
 
         responseDTOs = participantService.getParticipants(null, null, "Club A", null, "fullName", "asc");
         assertEquals(1, responseDTOs.size());
-        assertEquals("John Doe", responseDTOs.getFirst().fullName());
+        assertEquals("John Doe", responseDTOs.get(0).fullName());
 
         responseDTOs = participantService.getParticipants(null, AgeGroup.ADULT, null, null, "fullName", "asc");
         assertEquals(2, responseDTOs.size());
-        assertEquals("Jane Doe", responseDTOs.getFirst().fullName());
+        assertEquals("Jane Doe", responseDTOs.get(0).fullName());
         assertEquals("John Doe", responseDTOs.get(1).fullName());
 
         responseDTOs = participantService.getParticipants(null, null, null, "Discipline A", "fullName", "asc");
         assertEquals(2, responseDTOs.size());
-        assertEquals("Jane Doe", responseDTOs.getFirst().fullName());
+        assertEquals("Jane Doe", responseDTOs.get(0).fullName());
         assertEquals("John Doe", responseDTOs.get(1).fullName());
     }
 }
