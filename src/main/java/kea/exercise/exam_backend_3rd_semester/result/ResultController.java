@@ -1,5 +1,7 @@
 package kea.exercise.exam_backend_3rd_semester.result;
 
+import kea.exercise.exam_backend_3rd_semester.participant.AgeGroup;
+import kea.exercise.exam_backend_3rd_semester.participant.Gender;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +27,14 @@ public class ResultController {
     public ResponseEntity<List<ResultResponseDTO>> createResults(@RequestBody List<ResultRequestDTO> requestDTOs) {
         List<ResultResponseDTO> responseDTOs = resultService.createResults(requestDTOs);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTOs);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ResultResponseDTO>> getResultsByDiscipline(
+            @RequestParam String disciplineName,
+            @RequestParam(required = false) Gender gender,
+            @RequestParam(required = false) AgeGroup ageGroup) {
+        return ResponseEntity.ok(resultService.getResultsByDiscipline(gender, ageGroup, disciplineName));
     }
 
     @PutMapping("/{id}")

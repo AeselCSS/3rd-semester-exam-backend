@@ -4,9 +4,12 @@ import jakarta.transaction.Transactional;
 import kea.exercise.exam_backend_3rd_semester.discipline.DisciplineRepository;
 import kea.exercise.exam_backend_3rd_semester.exception.BadRequestException;
 import kea.exercise.exam_backend_3rd_semester.exception.ResourceNotFoundException;
+import kea.exercise.exam_backend_3rd_semester.participant.AgeGroup;
+import kea.exercise.exam_backend_3rd_semester.participant.Gender;
 import kea.exercise.exam_backend_3rd_semester.participant.ParticipantRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +37,27 @@ public class ResultService {
         return requestDTOs.stream().map(this::createResult).collect(Collectors.toList());
     }
 
+    public List<ResultResponseDTO> getResultsByDiscipline(Gender gender, AgeGroup ageGroup, String disciplineName) {
+        List<Result> results = new ArrayList<>(resultRepository.findAllByDisciplineName(disciplineName));
+
+        if (gender != null) {
+            results = results.stream().filter(result -> result.getParticipant().getGender() == gender).collect(Collectors.toList());
+        }
+
+        if (ageGroup != null) {
+            results = results.stream().filter(result -> result.getParticipant().getAgeGroup() == ageGroup).collect(Collectors.toList());
+        }
+
+        results.sort((r1, r2) -> {
+            return switch (r1.getResultType()) {
+                case TIME -> r1.getResultValue() - r2.getResultValue();
+                case DISTANCE, POINTS -> r2.getResultValue() - r1.getResultValue();
+                default -> 0;
+            };
+        });
+        return results.stream().map(this::toDto).toList();
+    }
+
     @Transactional
     public ResultResponseDTO updateResult(Long id, ResultRequestDTO requestDTO) {
         Result result = resultRepository.findById(id)
@@ -55,7 +79,6 @@ public class ResultService {
         return toDto(result);
     }
 
-    @Transactional
     public void deleteResult(Long id) {
         if (!resultRepository.existsById(id)) {
             throw new ResourceNotFoundException("Result not found with id: " + id);

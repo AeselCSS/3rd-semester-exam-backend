@@ -5,6 +5,7 @@ import kea.exercise.exam_backend_3rd_semester.discipline.DisciplineRepository;
 import kea.exercise.exam_backend_3rd_semester.discipline.DisciplineType;
 import kea.exercise.exam_backend_3rd_semester.exception.BadRequestException;
 import kea.exercise.exam_backend_3rd_semester.exception.ResourceNotFoundException;
+import kea.exercise.exam_backend_3rd_semester.participant.AgeGroup;
 import kea.exercise.exam_backend_3rd_semester.participant.Gender;
 import kea.exercise.exam_backend_3rd_semester.participant.Participant;
 import kea.exercise.exam_backend_3rd_semester.participant.ParticipantRepository;
@@ -17,11 +18,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -146,6 +149,24 @@ class ResultServiceTest {
         when(disciplineRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> resultService.createResult(requestDTO));
+    }
+
+    @Test
+    void getResultsByDiscipline() {
+        Result result1 = new Result(ResultType.TIME, LocalDate.now(), 62345, participant, disciplineTime);
+        Result result2 = new Result(ResultType.DISTANCE, LocalDate.now(), 335, participant, disciplineDistance);
+        Result result3 = new Result(ResultType.POINTS, LocalDate.now(), 9000, participant, disciplinePoints);
+
+        when(resultRepository.findAllByDisciplineName("100m")).thenReturn(List.of(result1));
+        when(resultRepository.findAllByDisciplineName("Long Jump")).thenReturn(List.of(result2));
+        when(resultRepository.findAllByDisciplineName("Decathlon")).thenReturn(List.of(result3));
+
+        List<ResultResponseDTO> responseDTOs = resultService.getResultsByDiscipline(Gender.MALE, AgeGroup.ADULT, "100m");
+
+        assertNotNull(responseDTOs);
+        assertEquals(1, responseDTOs.size());
+
+        assertEquals(ResultType.TIME, responseDTOs.getFirst().resultType());
     }
 
     @Test

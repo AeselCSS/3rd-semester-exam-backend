@@ -18,8 +18,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -113,6 +112,61 @@ class ResultControllerIntegrationTest {
                 .value(resultResponseDTO -> {
                     assertNotNull(resultResponseDTO);
                     assertEquals(requestDTO.resultValue(), resultResponseDTO.formattedValue());
+                });
+    }
+
+    @Test
+    void getResultsByDiscipline_differentDiscipline() {
+        Result result = new Result(ResultType.DISTANCE, LocalDate.now(), 435, participant, disciplineDistance);
+        resultRepository.save(result);
+
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/results")
+                        .queryParam("disciplineName", disciplineDistance.getName())
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(ResultResponseDTO.class)
+                .value(resultResponseDTOS -> {
+                    assertNotNull(resultResponseDTOS);
+                    assertEquals(1, resultResponseDTOS.size());
+                });
+    }
+
+    @Test
+    void getResultsByDiscipline_noResults() {
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/results")
+                        .queryParam("disciplineName", "Nonexistent Discipline")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(ResultResponseDTO.class)
+                .value(resultResponseDTOS -> {
+                    assertNotNull(resultResponseDTOS);
+                    assertTrue(resultResponseDTOS.isEmpty());
+                });
+    }
+
+    @Test
+    void getResultsByDiscipline_checkData() {
+        Result result = new Result(ResultType.TIME, LocalDate.now(), 62345, participant, disciplineTime);
+        resultRepository.save(result);
+
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/results")
+                        .queryParam("disciplineName", disciplineTime.getName())
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(ResultResponseDTO.class)
+                .value(resultResponseDTOS -> {
+                    assertNotNull(resultResponseDTOS);
+                    assertEquals(1, resultResponseDTOS.size());
+                    ResultResponseDTO resultDTO = resultResponseDTOS.getFirst();
+                    assertEquals(result.getResultType(), resultDTO.resultType());
+                    assertEquals(result.getParticipant().getId(), resultDTO.participantId());
+                    assertEquals(result.getDiscipline().getId(), resultDTO.disciplineId());
                 });
     }
 
