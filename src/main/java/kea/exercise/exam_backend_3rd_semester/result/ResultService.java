@@ -93,7 +93,9 @@ public class ResultService {
                 result.getDate(),
                 ResultUtils.formatValue(result.getResultType(), result.getResultValue()),
                 result.getParticipant().getId(),
-                result.getDiscipline().getId()
+                result.getDiscipline().getId(),
+                result.getParticipant().getFullName(),
+                result.getDiscipline().getName()
         );
     }
 
@@ -109,5 +111,11 @@ public class ResultService {
 
         int resultValue = ResultUtils.parseFormattedValue(requestDTO.resultType(), requestDTO.resultValue());
         return new Result(requestDTO.resultType(), requestDTO.date(), resultValue, participant, discipline);
+    }
+
+    public ResultResponseDTO getResultById(Long id) {
+        var result = resultRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Result not found with id: " + id));
+        return toDto(result);
     }
 }

@@ -31,10 +31,16 @@ public class ResultController {
 
     @GetMapping
     public ResponseEntity<List<ResultResponseDTO>> getResultsByDiscipline(
-            @RequestParam String disciplineName,
+            @RequestParam(required = false, defaultValue = "100m") String disciplineName,
             @RequestParam(required = false) Gender gender,
             @RequestParam(required = false) AgeGroup ageGroup) {
         return ResponseEntity.ok(resultService.getResultsByDiscipline(gender, ageGroup, disciplineName));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ResultResponseDTO> getResultById(@PathVariable Long id) {
+        ResultResponseDTO responseDTO = resultService.getResultById(id);
+        return ResponseEntity.ok(responseDTO);
     }
 
     @PutMapping("/{id}")

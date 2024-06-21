@@ -10,9 +10,20 @@ public record ResultResponseDTO(
         LocalDate date,
         String formattedValue,
         Long participantId,
-        Long disciplineId
+        Long disciplineId,
+        String participantName,
+        String disciplineName
 ) {
     public ResultResponseDTO(Result result) {
-        this(result.getId(), result.getResultType(), result.getDate(), ResultUtils.formatValue(result.getResultType(), result.getResultValue()), result.getParticipant().getId(), result.getDiscipline().getId());
+        this(
+                result.getId(),
+                result.getResultType(),
+                result.getDate(),
+                ResultUtils.formatValue(result.getResultType(), result.getResultValue()),
+                result.getParticipant().getId(),
+                result.getDiscipline().getId(),
+                result.getParticipant().getFullName(),
+                result.getDiscipline().getName()
+        );
     }
 }
