@@ -24,13 +24,14 @@ public class ParticipantController {
 
     @GetMapping
     public ResponseEntity<List<ParticipantResponseDTO>> getParticipants(
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) Gender gender,
             @RequestParam(required = false) AgeGroup ageGroup,
             @RequestParam(required = false) String club,
             @RequestParam(required = false) String discipline,
             @RequestParam(required = false) String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection) {
-        return ResponseEntity.ok(participantService.getParticipants(gender, ageGroup, club, discipline, sortBy, sortDirection));
+        return ResponseEntity.ok(participantService.getParticipants(search, gender, ageGroup, club, discipline, sortBy, sortDirection));
     }
 
     @GetMapping("/id/{id}")

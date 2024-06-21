@@ -21,7 +21,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -227,21 +228,21 @@ public class ParticipantServiceTest {
 
         when(participantRepository.findAll()).thenReturn(List.of(participant, participant2));
 
-        List<ParticipantResponseDTO> responseDTOs = participantService.getParticipants(Gender.FEMALE, null, null, null, "fullName", "asc");
+        List<ParticipantResponseDTO> responseDTOs = participantService.getParticipants(null, Gender.FEMALE, null, null, null, "fullName", "asc");
 
         assertEquals(1, responseDTOs.size());
-        assertEquals("Jane Doe", responseDTOs.get(0).fullName());
+        assertEquals("Jane Doe", responseDTOs.getFirst().fullName());
 
-        responseDTOs = participantService.getParticipants(null, null, "Club A", null, "fullName", "asc");
+        responseDTOs = participantService.getParticipants(null, null, null, "Club A", null, "fullName", "asc");
         assertEquals(1, responseDTOs.size());
-        assertEquals("John Doe", responseDTOs.get(0).fullName());
+        assertEquals("John Doe", responseDTOs.getFirst().fullName());
 
-        responseDTOs = participantService.getParticipants(null, AgeGroup.ADULT, null, null, "fullName", "asc");
+        responseDTOs = participantService.getParticipants(null, null, AgeGroup.ADULT, null, null, "fullName", "asc");
         assertEquals(2, responseDTOs.size());
         assertEquals("Jane Doe", responseDTOs.get(0).fullName());
         assertEquals("John Doe", responseDTOs.get(1).fullName());
 
-        responseDTOs = participantService.getParticipants(null, null, null, "Discipline A", "fullName", "asc");
+        responseDTOs = participantService.getParticipants(null, null, null, null, "Discipline A", "fullName", "asc");
         assertEquals(2, responseDTOs.size());
         assertEquals("Jane Doe", responseDTOs.get(0).fullName());
         assertEquals("John Doe", responseDTOs.get(1).fullName());

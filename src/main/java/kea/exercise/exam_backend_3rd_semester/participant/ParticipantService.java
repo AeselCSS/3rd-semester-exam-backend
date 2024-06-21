@@ -1,9 +1,9 @@
 package kea.exercise.exam_backend_3rd_semester.participant;
 
+import kea.exercise.exam_backend_3rd_semester.discipline.Discipline;
 import kea.exercise.exam_backend_3rd_semester.discipline.DisciplineRepository;
 import kea.exercise.exam_backend_3rd_semester.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
-import kea.exercise.exam_backend_3rd_semester.discipline.Discipline;
 
 import java.util.Comparator;
 import java.util.List;
@@ -36,11 +36,15 @@ public class ParticipantService {
     }
 
 
-    public List<ParticipantResponseDTO> getParticipants(Gender gender, AgeGroup ageGroup, String club, String discipline, String sortBy, String sortDirection) {
+    public List<ParticipantResponseDTO> getParticipants(String search, Gender gender, AgeGroup ageGroup, String club, String discipline, String sortBy, String sortDirection) {
         // Find all participants from the database
         List<Participant> participants = participantRepository.findAll();
 
         // Filter participants based on the query parameters
+        if (search != null && !search.isEmpty()) {
+            participants = participants.stream().filter(p -> p.getFullName().toLowerCase().contains(search.toLowerCase())).toList();
+        }
+
         if (gender != null) {
             participants = participants.stream().filter(p -> p.getGender() == gender).toList();
         }
