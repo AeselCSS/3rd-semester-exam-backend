@@ -3,6 +3,7 @@ package kea.exercise.exam_backend_3rd_semester.participant;
 import kea.exercise.exam_backend_3rd_semester.discipline.Discipline;
 import kea.exercise.exam_backend_3rd_semester.discipline.DisciplineRepository;
 import kea.exercise.exam_backend_3rd_semester.exception.ResourceNotFoundException;
+import kea.exercise.exam_backend_3rd_semester.result.ResultRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -13,10 +14,12 @@ import java.util.stream.Collectors;
 public class ParticipantService {
     private final ParticipantRepository participantRepository;
     private final DisciplineRepository disciplineRepository;
+    private final ResultRepository resultRepository;
 
-    public ParticipantService(ParticipantRepository participantRepository, DisciplineRepository disciplineRepository) {
+    public ParticipantService(ParticipantRepository participantRepository, DisciplineRepository disciplineRepository, ResultRepository resultRepository) {
         this.participantRepository = participantRepository;
         this.disciplineRepository = disciplineRepository;
+        this.resultRepository = resultRepository;
     }
 
     public ParticipantResponseDTO createParticipant(ParticipantRequestDTO participantRequestDTO) {
@@ -87,7 +90,7 @@ public class ParticipantService {
     }
 
     public ParticipantResponseDTO getParticipantByName(String name) {
-        return toDto(participantRepository.findByFullNameIgnoreCase(name).orElseThrow(()-> new ResourceNotFoundException("Participant not found with name: " + name)));
+        return toDto(participantRepository.findByFullNameContainingIgnoreCase(name).orElseThrow(() -> new ResourceNotFoundException("Participant not found with name: " + name)));
     }
 
     public ParticipantResponseDTO updateParticipant(Long id, ParticipantRequestDTO participantRequestDTO) {
@@ -118,6 +121,12 @@ public class ParticipantService {
     }
 
     public void deleteParticipant(Long id) {
+        if (!participantRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Participant not found with id: " + id);
+        }
+        // remove results associated with the participant
+        resultRepository.deleteByParticipantId(id);
+        // delete the participant
         participantRepository.deleteById(id);
     }
 
@@ -132,8 +141,14 @@ public class ParticipantService {
     public ParticipantResponseDTO removeDiscipline(Long id, String disciplineName) {
         Participant participant = participantRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Participant not found with id: " + id));
         Discipline discipline = disciplineRepository.findByName(disciplineName).orElseThrow(() -> new ResourceNotFoundException("Discipline not found with name: " + disciplineName));
+
+        // remove the discipline from the participant
         participant.removeDiscipline(discipline);
+        // save the participant
         participantRepository.save(participant);
+        // remove results associated with the participant and discipline
+        resultRepository.deleteByParticipantIdAndDisciplineId(id, discipline.getId());
+        // return the updated participant
         return toDto(participant);
     }
 

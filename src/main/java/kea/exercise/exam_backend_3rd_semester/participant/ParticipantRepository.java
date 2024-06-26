@@ -6,5 +6,5 @@ import java.util.Optional;
 
 public interface ParticipantRepository extends JpaRepository<Participant, Long> {
 
-    Optional<Participant> findByFullNameIgnoreCase(String name);
+    Optional<Participant> findByFullNameContainingIgnoreCase(String name);
 }

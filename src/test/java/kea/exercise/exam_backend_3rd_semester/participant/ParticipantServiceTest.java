@@ -4,6 +4,7 @@ import kea.exercise.exam_backend_3rd_semester.discipline.Discipline;
 import kea.exercise.exam_backend_3rd_semester.discipline.DisciplineRepository;
 import kea.exercise.exam_backend_3rd_semester.discipline.DisciplineType;
 import kea.exercise.exam_backend_3rd_semester.exception.ResourceNotFoundException;
+import kea.exercise.exam_backend_3rd_semester.result.ResultRepository;
 import kea.exercise.exam_backend_3rd_semester.resultType.ResultType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,8 +22,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -36,6 +36,9 @@ public class ParticipantServiceTest {
 
     @Mock
     private DisciplineRepository disciplineRepository;
+
+    @Mock
+    private ResultRepository resultRepository;
 
     @InjectMocks
     private ParticipantService participantService;
@@ -192,10 +195,11 @@ public class ParticipantServiceTest {
     @Test
     void removeDisciplineFromParticipant() {
         Discipline existingDiscipline = new Discipline("Discipline A", DisciplineType.RUNNING, ResultType.TIME);
-        participant.addDiscipline(existingDiscipline);  // Ensure the participant has the discipline to begin with
+        participant.addDiscipline(existingDiscipline);
 
         when(participantRepository.findById(1L)).thenReturn(Optional.of(participant));
         when(disciplineRepository.findByName("Discipline A")).thenReturn(Optional.of(existingDiscipline));
+        doNothing().when(resultRepository).deleteByParticipantIdAndDisciplineId(anyLong(), anyLong());
 
         ParticipantResponseDTO responseDTO = participantService.removeDiscipline(1L, "Discipline A");
 
@@ -205,8 +209,10 @@ public class ParticipantServiceTest {
 
         // Verify that the participant was saved with the updated disciplines
         verify(participantRepository).save(participant);
-    }
 
+        // Verify that the results were deleted for the participant and discipline
+        verify(resultRepository).deleteByParticipantIdAndDisciplineId(1L, existingDiscipline.getId());
+    }
 
 
     @Test
