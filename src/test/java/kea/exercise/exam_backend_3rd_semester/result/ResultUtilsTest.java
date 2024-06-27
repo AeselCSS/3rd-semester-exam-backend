@@ -4,7 +4,8 @@ import kea.exercise.exam_backend_3rd_semester.exception.BadRequestException;
 import kea.exercise.exam_backend_3rd_semester.resultType.ResultType;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ResultUtilsTest {
 
@@ -60,5 +61,23 @@ class ResultUtilsTest {
     void testInvalidResultTypeForParsing() {
         String invalidValue = "0";
         assertThrows(BadRequestException.class, () -> ResultUtils.parseFormattedValue(null, invalidValue));
+    }
+
+    @Test
+    void testInvalidTimeFormatForParsing() {
+        String invalidValue = "00:10:23";
+        assertThrows(BadRequestException.class, () -> ResultUtils.parseFormattedValue(ResultType.TIME, invalidValue));
+    }
+
+    @Test
+    void testInvalidDistanceFormatForParsing() {
+        String invalidValue = "7.3";
+        assertThrows(BadRequestException.class, () -> ResultUtils.parseFormattedValue(ResultType.DISTANCE, invalidValue));
+    }
+
+    @Test
+    void testInvalidPointsFormatForParsing() {
+        String invalidValue = "9000.0";
+        assertThrows(BadRequestException.class, () -> ResultUtils.parseFormattedValue(ResultType.POINTS, invalidValue));
     }
 }
