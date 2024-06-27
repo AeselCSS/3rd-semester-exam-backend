@@ -6,4 +6,8 @@ import java.util.List;
 
 public interface ResultRepository extends JpaRepository<Result, Long>{
     List<Result> findAllByDisciplineName(String disciplineName);
+
+    void deleteByParticipantId(Long participantId);
+
+    void deleteByParticipantIdAndDisciplineId(Long participantId, Long disciplineId);
 }

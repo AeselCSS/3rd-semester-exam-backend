@@ -34,6 +34,9 @@ public class ResultUtils {
 
         switch (resultType) {
             case TIME:
+                if (!formattedValue.matches("\\d{2}:\\d{2}:\\d{2}\\.\\d{2}")) {
+                    throw new BadRequestException("Invalid format for TIME. Expected format is HH:MM:SS.SS");
+                }
                 String[] timeParts = formattedValue.split("[:.]");
                 int hours = Integer.parseInt(timeParts[0]);
                 int minutes = Integer.parseInt(timeParts[1]);
@@ -41,11 +44,17 @@ public class ResultUtils {
                 int hundredths = Integer.parseInt(timeParts[3]);
                 return (hours * 3600 + minutes * 60 + seconds) * 100 + hundredths;
             case DISTANCE:
+                if (!formattedValue.matches("\\d+\\.\\d{2}")) {
+                    throw new BadRequestException("Invalid format for DISTANCE. Expected format is M.CM");
+                }
                 String[] distanceParts = formattedValue.split("\\.");
                 int meters = Integer.parseInt(distanceParts[0]);
                 int centimeters = Integer.parseInt(distanceParts[1]);
                 return meters * 100 + centimeters;
             case POINTS:
+                if (!formattedValue.matches("\\d+")) {
+                    throw new BadRequestException("Invalid format for POINTS. Expected format is an integer");
+                }
                 return Integer.parseInt(formattedValue);
             default:
                 throw new BadRequestException("Invalid result type: " + resultType);

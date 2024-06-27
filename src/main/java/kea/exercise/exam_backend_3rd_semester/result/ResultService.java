@@ -7,11 +7,14 @@ import kea.exercise.exam_backend_3rd_semester.exception.ResourceNotFoundExceptio
 import kea.exercise.exam_backend_3rd_semester.participant.AgeGroup;
 import kea.exercise.exam_backend_3rd_semester.participant.Gender;
 import kea.exercise.exam_backend_3rd_semester.participant.ParticipantRepository;
+import kea.exercise.exam_backend_3rd_semester.resultType.ResultType;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ResultService {
@@ -37,24 +40,30 @@ public class ResultService {
         return requestDTOs.stream().map(this::createResult).collect(Collectors.toList());
     }
 
+    public ResultResponseDTO getResultById(Long id) {
+        var result = resultRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Result not found with id: " + id));
+        return toDto(result);
+    }
+
     public List<ResultResponseDTO> getResultsByDiscipline(Gender gender, AgeGroup ageGroup, String disciplineName) {
-        List<Result> results = new ArrayList<>(resultRepository.findAllByDisciplineName(disciplineName));
+        List<Result> results = "all".equalsIgnoreCase(disciplineName) || disciplineName.isBlank()
+                ? resultRepository.findAll()
+                : resultRepository.findAllByDisciplineName(disciplineName);
 
-        if (gender != null) {
+        if (results == null) return new ArrayList<>();
+
+        if (gender != null)
             results = results.stream().filter(result -> result.getParticipant().getGender() == gender).collect(Collectors.toList());
-        }
 
-        if (ageGroup != null) {
+        if (ageGroup != null)
             results = results.stream().filter(result -> result.getParticipant().getAgeGroup() == ageGroup).collect(Collectors.toList());
-        }
 
-        results.sort((r1, r2) -> {
-            return switch (r1.getResultType()) {
-                case TIME -> r1.getResultValue() - r2.getResultValue();
-                case DISTANCE, POINTS -> r2.getResultValue() - r1.getResultValue();
-                default -> 0;
-            };
-        });
+        if (!disciplineName.equals("all"))
+            results.sort(getResultComparator());
+        else
+            results = sortResultsByDisciplineAndValue(results);
+
         return results.stream().map(this::toDto).toList();
     }
 
@@ -113,9 +122,22 @@ public class ResultService {
         return new Result(requestDTO.resultType(), requestDTO.date(), resultValue, participant, discipline);
     }
 
-    public ResultResponseDTO getResultById(Long id) {
-        var result = resultRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Result not found with id: " + id));
-        return toDto(result);
+    private Comparator<Result> getResultComparator() {
+        return (r1, r2) -> switch (r1.getResultType()) {
+            case TIME -> r1.getResultValue() - r2.getResultValue();
+            case DISTANCE, POINTS -> r2.getResultValue() - r1.getResultValue();
+            default -> 0;
+        };
+    }
+
+    private List<Result> sortResultsByDisciplineAndValue(List<Result> results) {
+        return Stream.of(
+                        results.stream().filter(r -> r.getResultType() == ResultType.TIME).sorted(Comparator.comparingInt(Result::getResultValue)).toList(),
+                        results.stream().filter(r -> r.getResultType() == ResultType.DISTANCE).sorted(Comparator.comparingInt(Result::getResultValue).reversed()).toList(),
+                        results.stream().filter(r -> r.getResultType() == ResultType.POINTS).sorted(Comparator.comparingInt(Result::getResultValue).reversed()).toList()
+                )
+                .flatMap(List::stream)
+                .sorted(Comparator.comparing(r -> r.getDiscipline().getName()))
+                .toList();
     }
 }

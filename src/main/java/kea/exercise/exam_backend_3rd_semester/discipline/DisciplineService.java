@@ -1,6 +1,7 @@
 package kea.exercise.exam_backend_3rd_semester.discipline;
 
 import kea.exercise.exam_backend_3rd_semester.exception.ResourceNotFoundException;
+import kea.exercise.exam_backend_3rd_semester.participant.Participant;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,6 +28,12 @@ public class DisciplineService {
     }
 
     private DisciplineResponseDTO toDto(Discipline discipline) {
-        return new DisciplineResponseDTO(discipline.getId(), discipline.getName(), discipline.getDisciplineType(), discipline.getResultType());
+        return new DisciplineResponseDTO(
+                discipline.getId(),
+                discipline.getName(),
+                discipline.getDisciplineType(),
+                discipline.getResultType(),
+                discipline.getParticipants().stream().map(Participant::getFullName).toList()
+        );
     }
 }

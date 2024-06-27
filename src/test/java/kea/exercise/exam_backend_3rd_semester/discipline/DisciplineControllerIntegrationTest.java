@@ -1,7 +1,7 @@
 package kea.exercise.exam_backend_3rd_semester.discipline;
 
 import kea.exercise.exam_backend_3rd_semester.resultType.ResultType;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,8 +19,8 @@ class DisciplineControllerIntegrationTest {
     @Autowired
     private DisciplineRepository disciplineRepository;
 
-    @BeforeEach
-    void setup() {
+    @AfterEach
+    void tearDown() {
         disciplineRepository.deleteAll();
     }
 
