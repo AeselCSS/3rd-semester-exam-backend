@@ -1,5 +1,6 @@
 package kea.exercise.exam_backend_3rd_semester.participant;
 
+import jakarta.transaction.Transactional;
 import kea.exercise.exam_backend_3rd_semester.discipline.Discipline;
 import kea.exercise.exam_backend_3rd_semester.discipline.DisciplineRepository;
 import kea.exercise.exam_backend_3rd_semester.exception.ResourceNotFoundException;
@@ -120,6 +121,7 @@ public class ParticipantService {
         return toDto(participant);
     }
 
+    @Transactional
     public void deleteParticipant(Long id) {
         if (!participantRepository.existsById(id)) {
             throw new ResourceNotFoundException("Participant not found with id: " + id);
@@ -130,6 +132,7 @@ public class ParticipantService {
         participantRepository.deleteById(id);
     }
 
+    @Transactional
     public ParticipantResponseDTO addDiscipline(Long id, String disciplineName) {
         Participant participant = participantRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Participant not found with id: " + id));
         Discipline discipline = disciplineRepository.findByName(disciplineName).orElseThrow(() -> new ResourceNotFoundException("Discipline not found with name: " + disciplineName));
@@ -138,6 +141,7 @@ public class ParticipantService {
         return toDto(participant);
     }
 
+    @Transactional
     public ParticipantResponseDTO removeDiscipline(Long id, String disciplineName) {
         Participant participant = participantRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Participant not found with id: " + id));
         Discipline discipline = disciplineRepository.findByName(disciplineName).orElseThrow(() -> new ResourceNotFoundException("Discipline not found with name: " + disciplineName));
